@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ReelMood AI</title>
+    <link rel="stylesheet" href="styles.css?v=20260713-coming-soon" />
+  </head>
+  <body>
+    <section class="intro-hero" id="introHero" aria-label="Welcome to ReelMood AI">
+      <div class="intro-hero-content">
+        <img
+          class="intro-logo"
+          src="assets/move-logo.png"
+          alt="Move movie recommendation app"
+        />
+        <h1>Find something worth watching.</h1>
+        <p class="intro-hero-copy">
+          Search by feeling, story, actor, genre, or anything on your mind.
+        </p>
+        <button class="hero-enter" id="enterAppButton" type="button">
+          Start exploring
+        </button>
+      </div>
+      <div class="intro-hero-footer" aria-live="polite">
+        <span>Personalized movie and TV discovery</span>
+        <span id="introCountdown">Opening ReelMood</span>
+      </div>
+    </section>
+    <div class="backdrop" aria-hidden="true"></div>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">ReelMood AI</p>
+          <h1>What should we watch?</h1>
+        </div>
+        <button
+          class="secondary-action topbar-upcoming"
+          id="upcomingButton"
+          type="button"
+          aria-haspopup="dialog"
+          aria-controls="upcomingModal"
+        >
+          Upcoming
+        </button>
+      </header>
+
+      <form
+        id="recommendationForm"
+        class="search-hero"
+        aria-label="Search movies and TV shows"
+      >
+        <section class="search-card">
+          <div class="search-heading">
+            <label class="field-label" for="prompt">Search movies and TV</label>
+            <button
+              class="help-button"
+              id="helpButton"
+              type="button"
+              aria-haspopup="dialog"
+              aria-controls="helpModal"
+            >
+              ?
+            </button>
+          </div>
+
+          <div class="primary-search-row">
+            <textarea
+              id="prompt"
+              name="prompt"
+              rows="2"
+              placeholder="Search movies and TV: funny, action, scary, black hole sci-fi"
+            ></textarea>
+            <button class="primary-action search-submit" type="submit">
+              Find matches
+            </button>
+          </div>
+
+          <div
+            class="search-interpretation"
+            id="searchInterpretation"
+            aria-label="Search interpretation"
+            aria-live="polite"
+            hidden
+          ></div>
+
+          <div class="search-tools">
+            <div
+              class="media-switch"
+              id="mediaSwitch"
+              aria-label="Browse category"
+            >
+              <button type="button" data-media="movie">Movies</button>
+              <button type="button" data-media="tv">TV Shows</button>
+              <button type="button" data-media="all">Both</button>
+            </div>
+
+            <div class="actions">
+              <button
+                class="secondary-action"
+                id="freshPicksButton"
+                type="button"
+              >
+                Fresh picks
+              </button>
+              <button
+                class="secondary-action"
+                id="surpriseButton"
+                type="button"
+              >
+                Surprise me
+              </button>
+              <button class="ghost-action" id="resetButton" type="button">
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <div class="genre-quick-filter" aria-labelledby="genreFilterLabel">
+            <div class="genre-filter-heading">
+              <span class="section-title" id="genreFilterLabel">Genre</span>
+              <span id="genreSelectionStatus" aria-live="polite">Any genre</span>
+              <button
+                class="genre-clear"
+                id="clearGenresButton"
+                type="button"
+                aria-label="Clear genre filters"
+                title="Clear genres"
+                hidden
+              >
+                &times;
+              </button>
+            </div>
+            <div
+              class="chip-grid genre-chip-strip"
+              id="genreChips"
+              aria-label="Genre choices"
+            ></div>
+          </div>
+
+        </section>
+
+        <div class="status-strip" aria-label="Current recommendation settings">
+          <span id="matchCount">32 matches</span>
+          <span id="sourceCount">All origins</span>
+          <span id="aiStatus">AI checking...</span>
+          <span id="watchlistCount">0 saved</span>
+          <span id="tasteProfileStatus">Profile: new</span>
+          <button
+            class="quick-save-button"
+            id="saveTopPickButton"
+            type="button"
+          >
+            Save top pick
+          </button>
+        </div>
+      </form>
+
+      <section
+        class="workspace"
+        aria-label="Movie and TV recommendation workspace"
+      >
+        <section class="results-panel" aria-label="Recommended titles">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Tonight's picks</p>
+              <h2 id="resultTitle">Smart matches</h2>
+            </div>
+            <div class="sort-control">
+              <label for="sortMode">Sort</label>
+              <select id="sortMode">
+                <option value="score" selected>Best match</option>
+                <option value="runtime">Shortest</option>
+                <option value="year">Newest</option>
+                <option value="rating">Highest rated</option>
+                <option value="audience">Viewer fit</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="spotlight" id="spotlight" aria-live="polite"></div>
+          <section
+            class="decision-coach"
+            id="decisionCoach"
+            aria-label="AI decision coach"
+          ></section>
+          <div class="movie-grid" id="movieGrid" aria-live="polite"></div>
+          <div class="results-footer">
+            <p id="resultsSummary">Showing top matches.</p>
+            <button
+              class="secondary-action"
+              id="toggleResultsButton"
+              type="button"
+              aria-expanded="false"
+            >
+              Show all matches
+            </button>
+          </div>
+        </section>
+
+        <aside class="watchlist-panel" aria-label="Saved titles">
+          <div class="panel-heading compact">
+            <div>
+              <p class="eyebrow">Queue</p>
+              <h2>Watchlist</h2>
+              <p class="autosave-status" id="autosaveStatus">
+                Autosaves on this laptop.
+              </p>
+            </div>
+            <button
+              class="icon-action"
+              id="clearWatchlist"
+              type="button"
+              aria-label="Clear watchlist"
+            >
+              Clear
+            </button>
+          </div>
+          <div class="taste-profile-card" aria-label="Personal taste profile">
+            <span class="mini-label">Taste profile</span>
+            <strong id="tasteProfileTitle">Building profile</strong>
+            <div class="profile-metrics">
+              <span id="profileSavedMetric">0 saved</span>
+              <span id="profileReviewMetric">0 reviews</span>
+              <span id="profileFreshnessMetric">Freshness on</span>
+            </div>
+          </div>
+          <div class="watchlist" id="watchlist"></div>
+          <div class="mini-card">
+            <span class="mini-label">Pick one</span>
+            <strong id="randomPick">Add titles to roll the dice.</strong>
+            <button
+              class="secondary-action full-width"
+              id="rollButton"
+              type="button"
+            >
+              Roll watchlist
+            </button>
+          </div>
+        </aside>
+
+        <details
+          class="control-panel filter-drawer"
+          aria-label="Recommendation controls"
+        >
+          <summary class="filter-heading">
+            <span>
+              <span class="eyebrow">Optional filters</span>
+              <strong>Tune the results</strong>
+            </span>
+            <span class="filter-summary-note" id="filterSummary"
+              >TV origin, year, runtime, crowd</span
+            >
+          </summary>
+
+          <div class="filter-layout">
+            <div class="taste-block">
+              <div class="section-block">
+                <div class="section-title">TV origin</div>
+                <div
+                  class="chip-grid"
+                  id="tvLocaleChips"
+                  aria-label="TV origin and language choices"
+                ></div>
+              </div>
+            </div>
+
+            <div class="filters">
+              <label>
+                Runtime
+                <select id="runtime">
+                  <option value="any">Any length</option>
+                  <option value="105">Under 105 min</option>
+                  <option value="125" selected>Under 125 min</option>
+                  <option value="150">Under 150 min</option>
+                </select>
+              </label>
+
+              <label>
+                Era
+                <select id="era">
+                  <option value="any" selected>Any era</option>
+                  <option value="classic">Before 2000</option>
+                  <option value="modern">2000-2015</option>
+                  <option value="new">2016+</option>
+                </select>
+              </label>
+
+              <label>
+                Year
+                <input
+                  id="yearFilter"
+                  type="number"
+                  min="1900"
+                  max="2030"
+                  step="1"
+                  placeholder="Any year"
+                  inputmode="numeric"
+                />
+              </label>
+
+              <label>
+                Crowd
+                <select id="crowd">
+                  <option value="solo">Solo watch</option>
+                  <option value="date">Date night</option>
+                  <option value="friends" selected>Friends</option>
+                  <option value="family">Family</option>
+                </select>
+              </label>
+
+              <label>
+                Decision lens
+                <select id="feedbackLens">
+                  <option value="balanced" selected>Balanced</option>
+                  <option value="audience">Viewer fit</option>
+                  <option value="low-friction">Easy choice</option>
+                  <option value="critic">Quality pick</option>
+                </select>
+              </label>
+
+              <div class="range-field">
+                <label for="intensity">Intensity</label>
+                <input id="intensity" type="range" min="1" max="5" value="3" />
+                <span id="intensityLabel">Balanced</span>
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
+    </main>
+
+    <div class="upcoming-modal" id="upcomingModal" hidden>
+      <section
+        class="upcoming-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="upcomingTitle"
+      >
+        <header class="upcoming-header">
+          <div>
+            <p class="eyebrow">Release calendar</p>
+            <h2 id="upcomingTitle">Upcoming movies</h2>
+            <p class="upcoming-summary" id="upcomingSummary"></p>
+          </div>
+          <button
+            class="icon-action upcoming-close"
+            id="closeUpcomingButton"
+            type="button"
+            aria-label="Close upcoming movies"
+          >
+            Close
+          </button>
+        </header>
+
+        <section
+          class="upcoming-trailer-stage"
+          id="upcomingTrailerStage"
+          aria-live="polite"
+          hidden
+        ></section>
+
+        <div class="upcoming-results-heading">
+          <div>
+            <p class="eyebrow">By release date</p>
+            <h3 id="upcomingResultsTitle">Coming soon</h3>
+          </div>
+          <span id="upcomingCount"></span>
+        </div>
+
+        <div class="upcoming-status" id="upcomingStatus" role="status"></div>
+        <div class="upcoming-grid" id="upcomingGrid"></div>
+
+        <div class="upcoming-footer">
+          <button
+            class="secondary-action"
+            id="loadMoreUpcomingButton"
+            type="button"
+            hidden
+          >
+            Load more releases
+          </button>
+          <p>
+            Release data by
+            <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer">TMDB</a>,
+            with a no-key release backup from
+            <a href="https://www.wikidata.org" target="_blank" rel="noopener noreferrer">Wikidata</a>.
+            Poster fallback may use
+            <a href="https://performance-partners.apple.com/search-api" target="_blank" rel="noopener noreferrer">iTunes Search</a>
+            and <a href="https://commons.wikimedia.org" target="_blank" rel="noopener noreferrer">Wikimedia</a>.
+            Trailer fallback by
+            <a href="https://kinocheck.com" target="_blank" rel="noopener noreferrer">KinoCheck</a>
+            and the optional
+            <a href="https://developers.google.com/youtube/v3" target="_blank" rel="noopener noreferrer">YouTube Data API</a>.
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <div class="modal-scrim" id="helpModal" hidden>
+      <section
+        class="help-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="helpTitle"
+      >
+        <div class="help-dialog-header">
+          <div>
+            <p class="eyebrow">More help</p>
+            <h2 id="helpTitle">Choose with less friction</h2>
+          </div>
+          <button
+            class="icon-action"
+            id="closeHelpButton"
+            type="button"
+            aria-label="Close help"
+          >
+            Close
+          </button>
+        </div>
+        <div class="help-grid">
+          <div>
+            <span>Search</span>
+            <p>
+              Type a title for direct matches, or describe the room: funny
+              sci-fi, quiet drama, scary but not too intense.
+            </p>
+          </div>
+          <div>
+            <span>Genre</span>
+            <p>
+              Use genre chips when you know the lane. Leave them empty when you
+              want the AI to explore more widely.
+            </p>
+          </div>
+          <div>
+            <span>TV Origin</span>
+            <p>
+              Pick US, Japan, Korea, or English when you specifically want shows
+              from those catalogs.
+            </p>
+          </div>
+          <div>
+            <span>Decision Lens</span>
+            <p>
+              Viewer fit favors crowd-pleasers, Easy choice lowers friction,
+              and Quality pick favors stronger catalog signals.
+            </p>
+          </div>
+        </div>
+        <div class="data-attribution">
+          <a
+            href="https://www.themoviedb.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Visit The Movie Database"
+          >
+            <img src="assets/tmdb-logo.svg" alt="TMDB" />
+          </a>
+          <div class="data-attribution-copy">
+            <p>
+              This product uses the TMDB API but is not endorsed or certified by
+              TMDB.
+            </p>
+            <p>
+              IMDb, Rotten Tomatoes, and YouTube links are provided for source
+              checking. Their ratings are not scraped or presented as app data.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <template id="movieCardTemplate">
+      <article class="movie-card">
+        <div class="poster-art" aria-hidden="true">
+          <span></span>
+        </div>
+        <div class="movie-copy">
+          <div class="movie-title-row">
+            <h3></h3>
+            <span class="match-score"></span>
+          </div>
+          <p class="movie-meta"></p>
+          <div class="feedback-strip"></div>
+          <p class="movie-reason"></p>
+          <p class="ai-decision"></p>
+          <div class="tag-row"></div>
+          <div class="source-check-slot"></div>
+          <div class="review-slot"></div>
+          <div class="recommendation-actions">
+            <button class="save-button" type="button">Add to watchlist</button>
+            <a class="learn-more-link" target="_blank" rel="noopener noreferrer"
+              >Search Google</a
+            >
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script src="search-intent.js?v=20260713-coming-soon"></script>
+    <script src="script.js?v=20260713-coming-soon"></script>
+  </body>
+</html>
